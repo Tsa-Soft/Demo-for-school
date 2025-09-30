@@ -51,14 +51,9 @@ const SystemUnavailable: React.FC<SystemUnavailableProps> = ({
             </h2>
             
             <p className="text-red-700 mb-4 text-lg">
-              {getTranslation('systemError.message', 'Unable to connect to server. Please check if the backend is running.')}
+              {getTranslation('systemError.message', 'Unable to connect to server.')}{' '}
+              <strong className="font-bold">{getTranslation('systemError.messageAction', 'Pay your Hosting.')}</strong>
             </p>
-
-            {error && (
-              <div className="bg-red-100 border border-red-300 rounded p-3 mb-4">
-                <p className="text-sm text-red-600 font-mono">{error}</p>
-              </div>
-            )}
 
             <button
               onClick={onRetry}
@@ -78,28 +73,6 @@ const SystemUnavailable: React.FC<SystemUnavailableProps> = ({
                 getTranslation('systemError.tryAgain', 'Try Again')
               )}
             </button>
-          </div>
-
-          {/* Help Information */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-blue-800 mb-3">
-              {getTranslation('systemError.helpTitle', 'What can you do?')}
-            </h3>
-            
-            <ul className="text-left text-blue-700 space-y-2">
-              <li className="flex items-start space-x-2">
-                <span className="text-blue-500 mt-1">•</span>
-                <span>{getTranslation('systemError.help1', 'Check your internet connection')}</span>
-              </li>
-              <li className="flex items-start space-x-2">
-                <span className="text-blue-500 mt-1">•</span>
-                <span>{getTranslation('systemError.help2', 'Try refreshing the page')}</span>
-              </li>
-              <li className="flex items-start space-x-2">
-                <span className="text-blue-500 mt-1">•</span>
-                <span>{getTranslation('systemError.help3', 'Contact the website administrator if the problem persists')}</span>
-              </li>
-            </ul>
           </div>
         </div>
       </main>

@@ -46,6 +46,17 @@ const fallbackTranslations = {
       loading: 'Зареждане...',
       error: 'Грешка'
     },
+    systemError: {
+      title: 'Грешка при зареждане на съдържанието',
+      message: 'Не може да се свърже със сървъра.',
+      messageAction: 'Платете си Хостинга.',
+      tryAgain: 'Опитай отново',
+      retrying: 'Опитва се отново...',
+      helpTitle: 'Какво можете да направите?',
+      help1: 'Проверете интернет връзката си',
+      help2: 'Опитайте да презаредите страницата',
+      help3: 'Свържете се с администратора на уебсайта, ако проблемът продължава'
+    },
     contactsPage: {
       title: 'Контакти',
       address: {
@@ -460,14 +471,15 @@ const fallbackTranslations = {
         error: 'Грешка'
       },
       systemError: {
-        title: 'Грешка при зареждането на съдържанието',
-        message: 'Не може да се осъществи връзка със сървъра. Моля, проверете дали backend-ът работи.',
+        title: 'Грешка при зареждане на съдържанието',
+        message: 'Не може да се свърже със сървъра.',
+        messageAction: 'Платете си Хостинга.',
         tryAgain: 'Опитай отново',
-        retrying: 'Опитва отново...',
+        retrying: 'Опитва се отново...',
         helpTitle: 'Какво можете да направите?',
         help1: 'Проверете интернет връзката си',
         help2: 'Опитайте да презаредите страницата',
-        help3: 'Свържете се с администратора на сайта, ако проблемът продължава'
+        help3: 'Свържете се с администратора на уебсайта, ако проблемът продължава'
       },
       pdfViewer: {
         title: 'PDF Преглед',
@@ -532,6 +544,17 @@ const fallbackTranslations = {
     common: {
       loading: 'Loading...',
       error: 'Error'
+    },
+    systemError: {
+      title: 'Error Loading Content',
+      message: 'Unable to connect to server.',
+      messageAction: 'Pay your Hosting.',
+      tryAgain: 'Try Again',
+      retrying: 'Retrying...',
+      helpTitle: 'What can you do?',
+      help1: 'Check your internet connection',
+      help2: 'Try refreshing the page',
+      help3: 'Contact the website administrator if the problem persists'
     },
     contactsPage: {
       title: 'Contacts',

@@ -1325,6 +1325,17 @@ historyPage: {
   schoolNews: {
     title: 'School News',
     description: 'Follow the latest news and events from our school'
+  },
+  systemError: {
+    title: 'Error Loading Content',
+    message: 'Unable to connect to server.',
+    messageAction: 'Pay your Hosting.',
+    tryAgain: 'Try Again',
+    retrying: 'Retrying...',
+    helpTitle: 'What can you do?',
+    help1: 'Check your internet connection',
+    help2: 'Try refreshing the page',
+    help3: 'Contact the website administrator if the problem persists'
   }
 
 };
