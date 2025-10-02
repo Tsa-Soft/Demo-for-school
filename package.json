@@ -24,6 +24,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^6.25.1",
+    "sql.js": "^1.13.0",
     "use-local-storage-state": "^19.3.0"
   },
   "devDependencies": {
@@ -32,7 +33,10 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "autoprefixer": "^10.4.21",
+    "dotenv": "^17.2.3",
+    "mysql2": "^3.15.1",
     "postcss": "^8.5.6",
+    "sqlite3": "^5.1.7",
     "tailwindcss": "^4.1.13",
     "typescript": "~5.7.2",
     "vite": "^6.3.5"

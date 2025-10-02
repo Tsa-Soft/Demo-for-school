@@ -1,9 +1,8 @@
 
 import React, { createContext, useContext, useMemo } from 'react';
-import useLocalStorageState from 'use-local-storage-state';
 import { useTranslationsSimple } from '../hooks/useTranslationsSimple';
 
-type Locale = 'bg' | 'en';
+type Locale = 'bg';
 
 interface LanguageContextType {
   locale: Locale;
@@ -19,17 +18,16 @@ interface LanguageContextType {
 export const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [locale, setLocale] = useLocalStorageState<Locale>('language', {
-    defaultValue: 'bg',
-  });
+  const locale: Locale = 'bg';
+  const setLocale = () => {}; // No-op function
 
-  const { 
-    translations, 
-    flatTranslations, 
-    loading, 
-    error, 
-    t: getTranslation, 
-    refreshTranslations 
+  const {
+    translations,
+    flatTranslations,
+    loading,
+    error,
+    t: getTranslation,
+    refreshTranslations
   } = useTranslationsSimple(locale);
 
   const value = useMemo(() => ({
@@ -41,7 +39,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     error,
     refreshTranslations,
     getTranslation,
-  }), [locale, translations, flatTranslations, loading, error, getTranslation]);
+  }), [translations, flatTranslations, loading, error, getTranslation]);
 
   return (
     <LanguageContext.Provider value={value}>

@@ -3,7 +3,6 @@ import { NavLink, Link } from 'react-router-dom';
 import { NavItem } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { useNavigationContext } from '../context/NavigationContext';
-import LanguageSwitcher from './LanguageSwitcher';
 import Search from './Search';
 import { LoginButton } from './cms/LoginButton';
 
@@ -305,7 +304,7 @@ const Header: React.FC = () => {
         <div ref={headerContainerRef} className="flex items-center justify-between h-20">
           <Link ref={logoRef} to="/" onClick={closeAllMenus} className="flex items-center space-x-3 rtl:space-x-reverse flex-shrink-0">
               <img src="/Pictures/1871.png" alt="Logo" className="w-20 h-20 object-contain" />
-              <span className="self-center text-xl font-semibold whitespace-nowrap hidden sm:block">{getTranslation('header.title', 'ОУ "Кольо Ганчев"')}</span>
+               <span className="self-center text-xl font-semibold whitespace-nowrap hidden sm:block">{getTranslation('header.title', 'ОУ "Кольо Ганчев"')}</span>
           </Link>
           
           <div className="flex items-center lg:hidden">
@@ -343,7 +342,6 @@ const Header: React.FC = () => {
 
             <div ref={otherControlsRef} className="flex items-center space-x-4 ml-6 flex-shrink-0">
                <Search />
-               <LanguageSwitcher />
                <LoginButton />
             </div>
           </nav>
@@ -373,11 +371,8 @@ const Header: React.FC = () => {
         <div className="lg:hidden animate-fade-in-down">
           <ul className="px-4 pt-2 pb-4 space-y-2 sm:px-6">
             {navLinks.map(renderMobileNavLink)}
-            <li className="pt-4 mt-4 border-t border-brand-blue-light flex flex-col space-y-3">
-              <LanguageSwitcher isMobile={true} />
-              <div className="flex justify-center">
-                <LoginButton />
-              </div>
+            <li className="pt-4 mt-4 border-t border-brand-blue-light flex justify-center">
+              <LoginButton />
             </li>
           </ul>
         </div>

@@ -578,6 +578,49 @@ class ApiService {
     });
   }
 
+  // News attachments methods
+  async getNewsAttachments(newsId: string) {
+    return this.request<any[]>(`/news/${newsId}/attachments`);
+  }
+
+  async uploadNewsAttachment(newsId: string, file: File): Promise<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const url = `${API_BASE_URL}/api/news/${newsId}/attachments`;
+    const headers: HeadersInit = {};
+
+    if (this.token) {
+      headers.Authorization = `Bearer ${this.token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new ApiError(response.status, errorData.error || 'Upload failed');
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError(0, 'Network error during upload');
+    }
+  }
+
+  async deleteNewsAttachment(newsId: string, attachmentId: string) {
+    return this.request(`/news/${newsId}/attachments/${attachmentId}`, {
+      method: 'DELETE',
+    });
+  }
+
   // Events methods
   async getEvents(locale = 'en', start?: string, end?: string) {
     let endpoint = `/events?locale=${locale}`;

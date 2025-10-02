@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { apiService } from '../src/services/api';
+import { isBackendAvailable } from '../src/utils/backendChecker';
+import { getArticleById } from '../src/data/hardcodedNews';
 
 interface NewsArticle {
   id: string;
@@ -13,6 +15,19 @@ interface NewsArticle {
   publishedDate: string;
   isPublished: boolean;
   isFeatured: boolean;
+  attachment_url?: string;
+  attachment_name?: string;
+}
+
+interface NewsAttachment {
+  id: string;
+  news_id: string;
+  filename: string;
+  original_name: string;
+  file_url: string;
+  file_size: number;
+  mime_type: string;
+  created_at: string;
 }
 
 const NewsArticlePage: React.FC = () => {
@@ -20,8 +35,10 @@ const NewsArticlePage: React.FC = () => {
   const navigate = useNavigate();
   const { t, getTranslation, language } = useLanguage();
   const [article, setArticle] = useState<NewsArticle | null>(null);
+  const [attachments, setAttachments] = useState<NewsAttachment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [viewerUrl, setViewerUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const loadArticle = async () => {
@@ -33,12 +50,110 @@ const NewsArticlePage: React.FC = () => {
 
       try {
         setIsLoading(true);
-        const articleData = await apiService.getNewsArticle(id, language);
-        setArticle(articleData);
-        setError(null);
+
+        // Check if backend is available
+        const backendOnline = await isBackendAvailable();
+
+        if (backendOnline) {
+          console.log('[NewsArticlePage] Backend is online, loading from API...');
+          const articleData = await apiService.getNewsArticle(id, language);
+          setArticle(articleData);
+
+          // Fetch attachments
+          try {
+            const attachmentsData = await apiService.getNewsAttachments(id);
+            setAttachments(attachmentsData);
+          } catch (attachError) {
+            console.error('Error loading attachments:', attachError);
+            // Don't fail the whole page if attachments fail to load
+            setAttachments([]);
+          }
+
+          setError(null);
+        } else {
+          console.log('[NewsArticlePage] Backend is offline, loading hardcoded data...');
+          // Load from hardcoded TypeScript file
+          const hardcodedArticle = getArticleById(id, language);
+
+          if (hardcodedArticle) {
+            setArticle({
+              id: hardcodedArticle.id,
+              title: hardcodedArticle.title,
+              excerpt: hardcodedArticle.excerpt,
+              content: hardcodedArticle.content,
+              featuredImage: hardcodedArticle.featured_image_url,
+              featuredImageAlt: hardcodedArticle.title,
+              publishedDate: hardcodedArticle.published_date,
+              isPublished: hardcodedArticle.is_published,
+              isFeatured: hardcodedArticle.is_featured,
+              attachment_url: hardcodedArticle.attachment_url,
+              attachment_name: hardcodedArticle.attachment_name
+            });
+
+            // If hardcoded data has attachment, create a pseudo-attachment object
+            if (hardcodedArticle.attachment_url && hardcodedArticle.attachment_name) {
+              setAttachments([{
+                id: 'hardcoded-attachment',
+                news_id: id,
+                filename: hardcodedArticle.attachment_name,
+                original_name: hardcodedArticle.attachment_name,
+                file_url: hardcodedArticle.attachment_url,
+                file_size: 0,
+                mime_type: hardcodedArticle.attachment_name.endsWith('.pdf') ? 'application/pdf' :
+                           hardcodedArticle.attachment_name.endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : '',
+                created_at: new Date().toISOString()
+              }]);
+            }
+
+            setError(null);
+          } else {
+            setError('Article not found');
+          }
+        }
       } catch (error) {
-        console.error('Error loading news article:', error);
-        setError('Failed to load article');
+        console.error('[NewsArticlePage] Error loading news article, using hardcoded fallback:', error);
+        // Try to get data from hardcoded fallback
+        try {
+          const hardcodedArticle = getArticleById(id, language);
+
+          if (hardcodedArticle) {
+            setArticle({
+              id: hardcodedArticle.id,
+              title: hardcodedArticle.title,
+              excerpt: hardcodedArticle.excerpt,
+              content: hardcodedArticle.content,
+              featuredImage: hardcodedArticle.featured_image_url,
+              featuredImageAlt: hardcodedArticle.title,
+              publishedDate: hardcodedArticle.published_date,
+              isPublished: hardcodedArticle.is_published,
+              isFeatured: hardcodedArticle.is_featured,
+              attachment_url: hardcodedArticle.attachment_url,
+              attachment_name: hardcodedArticle.attachment_name
+            });
+
+            // If hardcoded data has attachment, create a pseudo-attachment object
+            if (hardcodedArticle.attachment_url && hardcodedArticle.attachment_name) {
+              setAttachments([{
+                id: 'hardcoded-attachment',
+                news_id: id,
+                filename: hardcodedArticle.attachment_name,
+                original_name: hardcodedArticle.attachment_name,
+                file_url: hardcodedArticle.attachment_url,
+                file_size: 0,
+                mime_type: hardcodedArticle.attachment_name.endsWith('.pdf') ? 'application/pdf' :
+                           hardcodedArticle.attachment_name.endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : '',
+                created_at: new Date().toISOString()
+              }]);
+            }
+
+            setError(null);
+          } else {
+            setError('Article not found');
+          }
+        } catch (fallbackError) {
+          console.error('[NewsArticlePage] Hardcoded fallback also failed:', fallbackError);
+          setError('Failed to load article');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -46,6 +161,14 @@ const NewsArticlePage: React.FC = () => {
 
     loadArticle();
   }, [id, language]);
+
+  const handleViewDocument = (url: string) => {
+    setViewerUrl(url);
+  };
+
+  const closeViewer = () => {
+    setViewerUrl(null);
+  };
 
   if (isLoading) {
     return (
@@ -160,6 +283,92 @@ const NewsArticlePage: React.FC = () => {
                 }}
               />
             </div>
+
+            {/* Attachments section */}
+            {attachments.length > 0 && (
+              <div className="mt-8 pt-8 border-t border-gray-200">
+                <h2 className="text-xl font-semibold text-brand-blue mb-4">
+                  {getTranslation('news.attachments', 'Прикачени документи')}
+                </h2>
+                <div className="space-y-3">
+                  {attachments.map((attachment) => (
+                    <div
+                      key={attachment.id}
+                      className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group"
+                    >
+                      <svg
+                        className="w-8 h-8 text-brand-blue mr-3 flex-shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 group-hover:text-brand-blue transition-colors truncate">
+                          {attachment.original_name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {(attachment.file_size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleViewDocument(attachment.file_url)}
+                          className="p-2 text-brand-blue hover:bg-brand-blue hover:text-white rounded transition-colors"
+                          title={getTranslation('news.viewDocument', 'Преглед')}
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                            />
+                          </svg>
+                        </button>
+                        <a
+                          href={attachment.file_url}
+                          download
+                          className="p-2 text-brand-blue hover:bg-brand-blue hover:text-white rounded transition-colors"
+                          title={getTranslation('news.downloadDocument', 'Изтегляне')}
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                            />
+                          </svg>
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </article>
 
@@ -173,6 +382,34 @@ const NewsArticlePage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Document Viewer Modal */}
+      {viewerUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
+          <div className="relative w-full h-full max-w-7xl max-h-[90vh] m-4 bg-white rounded-lg shadow-xl flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {getTranslation('news.documentPreview', 'Преглед на документ')}
+              </h3>
+              <button
+                onClick={closeViewer}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <iframe
+                src={viewerUrl}
+                className="w-full h-full border-0"
+                title="Document Viewer"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

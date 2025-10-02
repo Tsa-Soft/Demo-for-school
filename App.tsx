@@ -5,7 +5,6 @@ import { CMSProvider } from './context/CMSContext';
 import { NavigationProvider } from './context/NavigationContext';
 import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
-import AppHealthWrapper from './components/AppHealthWrapper';
 
 // Import Page Components
 import HomePage from './pages/HomePage';
@@ -55,8 +54,7 @@ const App: React.FC = () => {
     <ErrorBoundary>
       <LanguageProvider>
         <NavigationProvider>
-          <AppHealthWrapper>
-            <CMSProvider>
+          <CMSProvider>
             <BrowserRouter>
           <Routes>
             <Route path="/" element={<Layout />}>
@@ -122,8 +120,7 @@ const App: React.FC = () => {
             </Route>
           </Routes>
             </BrowserRouter>
-            </CMSProvider>
-          </AppHealthWrapper>
+          </CMSProvider>
         </NavigationProvider>
       </LanguageProvider>
     </ErrorBoundary>

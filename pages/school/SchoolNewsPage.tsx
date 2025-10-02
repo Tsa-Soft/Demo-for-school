@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { apiService } from '../../src/services/api';
 import PageWrapper from '../../components/PageWrapper';
+import { isBackendAvailable } from '../../src/utils/backendChecker';
+import { getNewsArticles, getFeaturedArticles } from '../../src/data/hardcodedNews';
 
 interface NewsArticle {
   id: string;
@@ -28,24 +30,49 @@ const SchoolNewsPage: React.FC = () => {
         setIsLoading(true);
         setError(null);
 
-        // Load both regular news and featured news
-        const [newsData, featuredData] = await Promise.all([
-          apiService.getNews(locale, true), // publishedOnly = true
-          apiService.getFeaturedNews(locale, 3) // limit to 3 featured articles
-        ]);
+        // Check if backend is available
+        const backendOnline = await isBackendAvailable();
 
-        setArticles(newsData);
-        setFeaturedArticles(featuredData);
+        if (backendOnline) {
+          console.log('[SchoolNewsPage] Backend is online, loading from API...');
+          // Load both regular news and featured news from backend
+          const [newsData, featuredData] = await Promise.all([
+            apiService.getNews(locale, true), // publishedOnly = true
+            apiService.getFeaturedNews(locale, 3) // limit to 3 featured articles
+          ]);
+
+          setArticles(newsData);
+          setFeaturedArticles(featuredData);
+        } else {
+          console.log('[SchoolNewsPage] Backend is offline, loading hardcoded data...');
+          // Load from hardcoded TypeScript file
+          const newsData = getNewsArticles(locale, true);
+          const featuredData = getFeaturedArticles(locale, 3);
+
+          setArticles(newsData);
+          setFeaturedArticles(featuredData);
+        }
       } catch (error) {
-        console.error('Error loading news:', error);
-        setError(getTranslation('news.loadError', 'Failed to load news articles'));
+        console.error('[SchoolNewsPage] Error loading news, using hardcoded fallback:', error);
+        // Use hardcoded fallback when everything fails
+        try {
+          const newsData = getNewsArticles(locale, true);
+          const featuredData = getFeaturedArticles(locale, 3);
+
+          setArticles(newsData);
+          setFeaturedArticles(featuredData);
+          setError(null); // Clear error since we have fallback data
+        } catch (fallbackError) {
+          console.error('[SchoolNewsPage] Hardcoded fallback also failed:', fallbackError);
+          setError(getTranslation('news.loadError', 'Failed to load news articles'));
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     loadNews();
-  }, [locale, getTranslation]);
+  }, [locale]);
 
   const formatDate = (dateString: string) => {
     try {

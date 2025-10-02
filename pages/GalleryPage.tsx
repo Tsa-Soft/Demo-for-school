@@ -4,9 +4,10 @@ import { useLanguage } from '../context/LanguageContext';
 import { EditableText } from '../components/cms/EditableText';
 import {EditableImage } from '../components/cms/EditableImage';
 import { apiService } from '../src/services/api';
+import { getAllGalleryImages } from '../src/data/mockGalleryData';
 
 const GalleryPage: React.FC = () => {
-  const { t, getTranslation } = useLanguage();
+  const { t, getTranslation, locale } = useLanguage();
   const [images, setImages] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -32,26 +33,16 @@ const GalleryPage: React.FC = () => {
         setImages(sortedImages);
       } catch (error) {
         console.error('❌ Failed to load gallery images:', error);
-        // Fallback to hardcoded images if database fails
-        const fallbackImages = [
-          { id: 'img1', src: 'https://picsum.photos/600/400?random=40', alt: t.galleryPage?.alts?.img1 || 'Educational process' },
-          { id: 'img2', src: 'https://picsum.photos/600/400?random=41', alt: t.galleryPage?.alts?.img2 || 'Sports day' },
-          { id: 'img3', src: 'https://picsum.photos/600/400?random=42', alt: t.galleryPage?.alts?.img3 || 'Christmas celebration' },
-          { id: 'img4', src: 'https://picsum.photos/600/400?random=43', alt: t.galleryPage?.alts?.img4 || 'Opening of the school year' },
-          { id: 'img5', src: 'https://picsum.photos/600/400?random=44', alt: t.galleryPage?.alts?.img5 || 'Art exhibition' },
-          { id: 'img6', src: 'https://picsum.photos/600/400?random=45', alt: t.galleryPage?.alts?.img6 || 'Teamwork' },
-          { id: 'img7', src: 'https://picsum.photos/600/400?random=46', alt: t.galleryPage?.alts?.img7 || 'Nature trip' },
-          { id: 'img8', src: 'https://picsum.photos/600/400?random=47', alt: t.galleryPage?.alts?.img8 || 'Music lesson' },
-          { id: 'img9', src: 'https://picsum.photos/600/400?random=48', alt: t.galleryPage?.alts?.img9 || 'Award ceremony' },
-        ];
-        setImages(fallbackImages);
+        // Fallback to mock data from SQL if database fails
+        const mockImages = getAllGalleryImages(locale === 'bg' ? 'bg' : 'en');
+        setImages(mockImages);
       } finally {
         setIsLoading(false);
       }
     };
 
     loadGalleryImages();
-  }, [t.galleryPage?.alts]);
+  }, [locale]);
   
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
