@@ -61,7 +61,10 @@
       "Bash(lsof:*)",
       "Bash(awk:*)",
       "Bash(xargs kill:*)",
-      "Bash(timeout 30 npm run dev)"
+      "Bash(timeout 30 npm run dev)",
+      "Bash(shuf:*)",
+      "Read(///**)",
+      "Bash(/dev/null)"
     ],
     "deny": [],
     "ask": []

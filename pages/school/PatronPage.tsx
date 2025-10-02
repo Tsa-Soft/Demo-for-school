@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PageWrapper from '../../components/PageWrapper';
 import { useLanguage } from '../../context/LanguageContext';
 import { apiService } from '../../src/services/api';
+import { getMockPatronContent } from '../../src/data/mockPatronData';
 
 interface PatronContentItem {
   id: number;
@@ -30,11 +31,10 @@ const PatronPage: React.FC = () => {
       setPatronContent(response.content);
     } catch (err) {
       console.error('Failed to load patron content:', err);
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Failed to load patron content');
-      }
+      // Use mock data as fallback
+      const mockData = getMockPatronContent(locale);
+      setPatronContent(mockData.content);
+      setError(null); // Clear error since we have fallback data
     } finally {
       setIsLoading(false);
     }

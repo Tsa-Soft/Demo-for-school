@@ -56,31 +56,30 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
       label: getTranslation('nav.documents.title', 'Documents'),
       path: '/documents',
       children: [
+        { label: getTranslation('nav.documents.budget', 'Budget Reports'), path: '/documents/budget' },
+        { label: getTranslation('nav.documents.rules', 'Rules and Plans'), path: '/documents/rules' },
+        { label: getTranslation('nav.documents.admissions', 'Admissions'), path: '/documents/admissions' },
         { label: getTranslation('nav.documents.calendar', 'Calendar'), path: '/documents/calendar' },
         { label: getTranslation('nav.documents.schedules', 'Schedules'), path: '/documents/schedules' },
-        { label: getTranslation('nav.documents.budget', 'Budget Reports'), path: '/documents/budget' },
-        { label: getTranslation('nav.documents.rules', 'Rules'), path: '/documents/rules' },
-        { label: getTranslation('nav.documents.ethics', 'Ethics Code'), path: '/documents/ethics' },
-        { label: getTranslation('nav.documents.adminServices', 'Admin Services'), path: '/documents/admin-services' },
-        { label: getTranslation('nav.documents.admissions', 'Admissions'), path: '/documents/admissions' },
-        { label: getTranslation('nav.documents.roadSafety', 'Road Safety'), path: '/documents/road-safety' },
-        { label: getTranslation('nav.documents.ores', 'ORES'), path: '/documents/ores' },
-        { label: getTranslation('nav.documents.continuingEducation', 'Continuing Education'), path: '/documents/continuing-education' },
-        { label: getTranslation('nav.documents.faq', 'FAQ'), path: '/documents/faq' },
-        { label: getTranslation('nav.documents.announcement', 'Announcements'), path: '/documents/announcement' },
         { label: getTranslation('nav.documents.students', 'Students'), path: '/documents/students' },
         { label: getTranslation('nav.documents.olympiads', 'Olympiads'), path: '/documents/olympiads' },
-      ],
+      ]
     },
     { label: getTranslation('nav.gallery', 'Gallery'), path: '/gallery' },
-    { label: getTranslation('nav.usefulLinks', 'Useful Links'), path: '/useful-links' },
     {
       label: getTranslation('nav.projects.title', 'Projects'),
       path: '/projects',
-      children: [], // Empty dropdown as requested
+      children: []
     },
     { label: getTranslation('nav.contacts', 'Contacts'), path: '/contacts' },
-    { label: getTranslation('nav.infoAccess', 'Info Access'), path: '/info-access' },
+    {
+      label: getTranslation('nav.more', 'Още'),
+      path: '/more',
+      children: [
+        { label: getTranslation('nav.usefulLinks', 'Useful Links'), path: '/useful-links' },
+        { label: getTranslation('nav.infoAccess', 'Info Access'), path: '/info-access' },
+      ]
+    },
   ];
 
   const getTranslatedLabel = (pageId: string, pageName: string): string => {

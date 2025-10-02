@@ -7,12 +7,13 @@ import InfoAccessManagerTab from './InfoAccessManagerTab';
 import CalendarManagerTab from './CalendarManagerTab';
 import PatronManagerTab from './PatronManagerTab';
 import UsefulLinksManagerTab from './UsefulLinksManagerTab';
-import TranslationsManagerTab from './TranslationsManagerTab';
 import ConfirmDialog from './ConfirmDialog';
 import { useConfirm } from '../../hooks/useConfirm';
 import DocumentsMenuManagerTab from './DocumentsMenuManagerTab';
 import ProjectsMenuManagerTab from './ProjectsMenuManagerTab';
 import AchievementsDirectorsManager from './AchievementsDirectorsManager';
+import useHealthCheck from '../../hooks/useHealthCheck';
+import SystemUnavailable from '../SystemUnavailable';
 
 // Reusable Image Picker Component for selecting from Pictures folder
 interface ImagePickerProps {
@@ -2164,6 +2165,8 @@ const NewsManagerTab: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingArticle, setEditingArticle] = useState<any>(null);
   const [showImagePicker, setShowImagePicker] = useState(false);
+  const [attachments, setAttachments] = useState<any[]>([]);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -2230,13 +2233,14 @@ const NewsManagerTab: React.FC = () => {
       published_date: article.published_date ? article.published_date.split('T')[0] : new Date().toISOString().split('T')[0]
     });
     setEditingArticle(article);
+    loadAttachments(article.id);
     setShowAddForm(true);
   };
 
   const handleSaveNews = async () => {
-    // Validation
-    if (!formData.title_bg || !formData.title_en || !formData.excerpt_bg || !formData.excerpt_en) {
-      alert(getTranslation("cms.newsManager.form.requiredFields", "Please fill in all required fields"));
+    // Validation - at least one title is required
+    if (!formData.title_bg && !formData.title_en) {
+      alert(getTranslation("cms.newsManager.form.requiredFields", "Please fill in at least one title"));
       return;
     }
 
@@ -2303,6 +2307,55 @@ const NewsManagerTab: React.FC = () => {
       featured_image_alt: filename
     }));
     setShowImagePicker(false);
+  };
+
+  // Load attachments when editing an article
+  const loadAttachments = async (newsId: string) => {
+    try {
+      const attachmentsList = await apiService.getNewsAttachments(newsId);
+      setAttachments(attachmentsList || []);
+    } catch (error) {
+      console.error('Failed to load attachments:', error);
+      setAttachments([]);
+    }
+  };
+
+  // Handle file upload
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !editingArticle) return;
+
+    try {
+      setIsUploadingFile(true);
+      const result = await apiService.uploadNewsAttachment(editingArticle.id, file);
+      alert('File uploaded successfully!');
+      await loadAttachments(editingArticle.id);
+      // Reset input
+      event.target.value = '';
+    } catch (error: any) {
+      console.error('Failed to upload file:', error);
+      alert(`Failed to upload file: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsUploadingFile(false);
+    }
+  };
+
+  // Handle delete attachment
+  const handleDeleteAttachment = async (attachmentId: string) => {
+    if (!editingArticle) return;
+
+    if (!confirm('Are you sure you want to delete this attachment?')) {
+      return;
+    }
+
+    try {
+      await apiService.deleteNewsAttachment(editingArticle.id, attachmentId);
+      alert('Attachment deleted successfully!');
+      await loadAttachments(editingArticle.id);
+    } catch (error: any) {
+      console.error('Failed to delete attachment:', error);
+      alert(`Failed to delete attachment: ${error.message || 'Unknown error'}`);
+    }
   };
 
   return (
@@ -2427,121 +2480,154 @@ const NewsManagerTab: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-              {/* Titles */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {getTranslation('cms.newsManager.form.titleBg', 'Title (Bulgarian)')}
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.title_bg}
-                    onChange={(e) => setFormData(prev => ({ ...prev, title_bg: e.target.value }))}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Заглавие на български"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {getTranslation('cms.newsManager.form.titleEn', 'Title (English)')}
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.title_en}
-                    onChange={(e) => setFormData(prev => ({ ...prev, title_en: e.target.value }))}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Title in English"
-                  />
-                </div>
+              {/* Title */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {getTranslation('cms.newsManager.form.titleBg', 'Заглавие')} <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.title_bg}
+                  onChange={(e) => setFormData(prev => ({ ...prev, title_bg: e.target.value }))}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Заглавие"
+                />
               </div>
 
-              {/* Excerpts */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {getTranslation("cms.newsManager.form.excerptBg", "Excerpt (Bulgarian)")}
-                  </label>
-                  <textarea
-                    value={formData.excerpt_bg}
-                    onChange={(e) => setFormData(prev => ({ ...prev, excerpt_bg: e.target.value }))}
-                    rows={3}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Кратко описание на български"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {getTranslation("cms.newsManager.form.excerptEn", "Excerpt (English)")}
-                  </label>
-                  <textarea
-                    value={formData.excerpt_en}
-                    onChange={(e) => setFormData(prev => ({ ...prev, excerpt_en: e.target.value }))}
-                    rows={3}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Short description in English"
-                  />
-                </div>
+              {/* Excerpt */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {getTranslation("cms.newsManager.form.excerptBg", "Кратко описание")} <span className="text-gray-400 text-xs">(optional)</span>
+                </label>
+                <textarea
+                  value={formData.excerpt_bg}
+                  onChange={(e) => setFormData(prev => ({ ...prev, excerpt_bg: e.target.value }))}
+                  rows={3}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Кратко описание"
+                />
               </div>
 
               {/* Content */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {getTranslation("cms.newsManager.form.contentBg", "Content (Bulgarian)")}
-                  </label>
-                  <textarea
-                    value={formData.content_bg}
-                    onChange={(e) => setFormData(prev => ({ ...prev, content_bg: e.target.value }))}
-                    rows={6}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Пълно съдържание на български"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {getTranslation("cms.newsManager.form.contentEn", "Content (English)")}
-                  </label>
-                  <textarea
-                    value={formData.content_en}
-                    onChange={(e) => setFormData(prev => ({ ...prev, content_en: e.target.value }))}
-                    rows={6}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Full content in English"
-                  />
-                </div>
-              </div>
-
-              {/* Featured Image */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {getTranslation("cms.newsManager.form.featuredImage", "Featured Image")}
+                  {getTranslation("cms.newsManager.form.contentBg", "Съдържание")} <span className="text-gray-400 text-xs">(optional)</span>
                 </label>
-                <div className="flex items-center space-x-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowImagePicker(true)}
-                    className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-                  >
-                    {getTranslation("cms.newsManager.form.selectImage", "Select Image")}
-                  </button>
-                  {formData.featured_image_url && (
-                    <>
-                      <img
-                        src={`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}${formData.featured_image_url}`}
-                        alt="Featured"
-                        className="w-16 h-16 object-cover rounded"
+                <textarea
+                  value={formData.content_bg}
+                  onChange={(e) => setFormData(prev => ({ ...prev, content_bg: e.target.value }))}
+                  rows={6}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Пълно съдържание"
+                />
+              </div>
+
+              {/* Featured Image & File Attachments */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Featured Image */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {getTranslation("cms.newsManager.form.featuredImage", "Featured Image")}
+                  </label>
+                  <div className="flex flex-col space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowImagePicker(true)}
+                      className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                    >
+                      {getTranslation("cms.newsManager.form.selectImage", "Select Image")}
+                    </button>
+                    {formData.featured_image_url && (
+                      <div className="flex items-center space-x-2">
+                        <img
+                          src={`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}${formData.featured_image_url}`}
+                          alt="Featured"
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, featured_image_url: '', featured_image_alt: '' }))}
+                          className="text-red-600 hover:text-red-800 text-sm"
+                        >
+                          {getTranslation("cms.newsManager.form.removeImage", "Remove")}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* File Attachments */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    📎 {getTranslation("cms.newsManager.form.attachments", "File Attachments")}
+                  </label>
+                  {editingArticle ? (
+                    <div className="flex flex-col space-y-2">
+                      <input
+                        type="file"
+                        onChange={handleFileUpload}
+                        disabled={isUploadingFile}
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,.tar"
+                        className="block w-full text-sm text-gray-500
+                          file:mr-4 file:py-2 file:px-4
+                          file:rounded-md file:border-0
+                          file:text-sm file:font-semibold
+                          file:bg-blue-50 file:text-blue-700
+                          hover:file:bg-blue-100
+                          disabled:opacity-50"
                       />
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, featured_image_url: '', featured_image_alt: '' }))}
-                        className="text-red-600 hover:text-red-800 text-sm"
-                      >
-                        {getTranslation("cms.newsManager.form.removeImage", "Remove")}
-                      </button>
-                    </>
+                      {isUploadingFile && (
+                        <p className="text-sm text-blue-600">Uploading...</p>
+                      )}
+                      <p className="text-xs text-gray-500">
+                        PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, ZIP, RAR (Max 10MB)
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded text-sm text-gray-600">
+                      💡 Save the article first to add file attachments
+                    </div>
                   )}
                 </div>
               </div>
+
+              {/* List of attached files - shown below when editing */}
+              {editingArticle && attachments.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Attached Files
+                  </label>
+                  <div className="border border-gray-200 rounded-md divide-y divide-gray-200">
+                    {attachments.map((attachment) => (
+                      <div key={attachment.id} className="p-3 flex items-center justify-between hover:bg-gray-50">
+                        <div className="flex items-center space-x-3 flex-1 min-w-0">
+                          <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                          </svg>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {attachment.original_name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {(attachment.file_size / 1024).toFixed(1)} KB
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteAttachment(attachment.id)}
+                          className="ml-3 text-red-600 hover:text-red-800 p-1 flex-shrink-0"
+                          title="Delete attachment"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Settings */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -3061,6 +3147,7 @@ const CMSDashboard: React.FC = () => {
   const { isLoggedIn, logout } = useCMS();
   const [openDropdowns, setOpenDropdowns] = useState<{[key: string]: boolean}>({});
   const { confirm, dialogProps } = useConfirm();
+  const { isHealthy, isLoading, error, retry } = useHealthCheck(true);
 
   // Organize tabs into categories
   const tabCategories = useMemo(() => [
@@ -3153,12 +3240,6 @@ const CMSDashboard: React.FC = () => {
           label: 'Projects Menu',
           icon: '📊',
           content: <ProjectsMenuManagerTab isActive={activeTab === 'projects-menu'} />
-        },
-        {
-          id: 'translations',
-          label: 'Translations',
-          icon: '🌐',
-          content: <TranslationsManagerTab />
         }
       ]
     },
@@ -3195,6 +3276,29 @@ const CMSDashboard: React.FC = () => {
       }));
     }
   }, [activeTab, tabCategories, openDropdowns]);
+
+  // Show loading state while checking backend health
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-brand-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Проверка на връзката със сървъра...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error page if backend is not available
+  if (!isHealthy) {
+    return (
+      <SystemUnavailable
+        onRetry={retry}
+        isRetrying={isLoading}
+        error={error}
+      />
+    );
+  }
 
   if (!isLoggedIn) {
     return (

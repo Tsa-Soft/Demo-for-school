@@ -175,6 +175,19 @@ const createTables = async (): Promise<void> => {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )`,
 
+    // News attachments table
+    `CREATE TABLE IF NOT EXISTS news_attachments (
+      id VARCHAR(255) PRIMARY KEY,
+      news_id VARCHAR(255) NOT NULL,
+      filename VARCHAR(500) NOT NULL,
+      original_name VARCHAR(500) NOT NULL,
+      file_url TEXT NOT NULL,
+      file_size BIGINT NOT NULL,
+      mime_type VARCHAR(100) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (news_id) REFERENCES news (id) ON DELETE CASCADE
+    )`,
+
     // Translatable text content table
     `CREATE TABLE IF NOT EXISTS translations (
       id VARCHAR(255) PRIMARY KEY,

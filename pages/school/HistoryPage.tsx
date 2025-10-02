@@ -5,6 +5,7 @@ import { EditableText } from '../../components/cms/EditableText';
 import { EditableImage } from '../../components/cms/EditableImage';
 import { EditableList } from '../../components/cms/EditableList';
 import { apiService } from '../../src/services/api';
+import { getAchievementsInLanguage, getDirectorsInLanguage } from '../../src/data/mockHistoryData';
 
 interface Achievement {
   id: number;
@@ -24,7 +25,7 @@ interface Director {
 }
 
 const HistoryPage: React.FC = () => {
-  const { t, getTranslation } = useLanguage();
+  const { t, getTranslation, locale } = useLanguage();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [directors, setDirectors] = useState<Director[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +35,7 @@ const HistoryPage: React.FC = () => {
       try {
         setLoading(true);
         console.log('🔄 Loading achievements and directors...');
-        
+
         const [achievementsData, directorsData] = await Promise.all([
           apiService.getAchievements().catch((err) => {
             console.error('❌ Error loading achievements:', err);
@@ -45,14 +46,26 @@ const HistoryPage: React.FC = () => {
             return [];
           })
         ]);
-        
+
         console.log('📊 Achievements loaded:', achievementsData);
         console.log('👨‍💼 Directors loaded:', directorsData);
-        
-        setAchievements(achievementsData || []);
-        setDirectors(directorsData || []);
+
+        // Use mock data as fallback if API returns empty data
+        const finalAchievements = achievementsData && achievementsData.length > 0
+          ? achievementsData
+          : getAchievementsInLanguage(locale === 'bg' ? 'bg' : 'en');
+
+        const finalDirectors = directorsData && directorsData.length > 0
+          ? directorsData
+          : getDirectorsInLanguage(locale === 'bg' ? 'bg' : 'en');
+
+        setAchievements(finalAchievements);
+        setDirectors(finalDirectors);
       } catch (error) {
         console.error('💥 Error loading history data:', error);
+        // Use mock data on error
+        setAchievements(getAchievementsInLanguage(locale === 'bg' ? 'bg' : 'en'));
+        setDirectors(getDirectorsInLanguage(locale === 'bg' ? 'bg' : 'en'));
       } finally {
         setLoading(false);
         console.log('✅ Loading complete');
@@ -60,7 +73,7 @@ const HistoryPage: React.FC = () => {
     };
 
     loadData();
-  }, []);
+  }, [locale]);
 
   return (
     <PageWrapper title={getTranslation('historyPage.title', 'История')}>

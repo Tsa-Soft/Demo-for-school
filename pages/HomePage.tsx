@@ -5,6 +5,8 @@ import { EditableText} from '../components/cms/EditableText';
 import { EditableImage  } from '../components/cms/EditableImage';
 import { EditableList } from '../components/cms/EditableList';
 import { apiService } from '../src/services/api';
+import { isBackendAvailable } from '../src/utils/backendChecker';
+import { getFeaturedArticles } from '../src/data/hardcodedNews';
 
 const HeroSection: React.FC = () => {
   const { t, getTranslation } = useLanguage();
@@ -97,30 +99,56 @@ const HomePage: React.FC = () => {
     const loadNews = async () => {
       try {
         setIsLoadingNews(true);
-        const allNews = await apiService.getNews(language, true);
-        const featuredNews = allNews.slice(0, 3); // Get the 3 most recent published articles
-        
+
+        // Check if backend is available
+        const backendOnline = await isBackendAvailable();
+
+        let featuredNews: any[] = [];
+
+        if (backendOnline) {
+          console.log('[HomePage] Backend is online, loading news from API...');
+          const allNews = await apiService.getNews(language, true);
+          featuredNews = allNews.slice(0, 3); // Get the 3 most recent published articles
+        } else {
+          console.log('[HomePage] Backend is offline, loading hardcoded news...');
+          featuredNews = getFeaturedArticles(language, 3);
+        }
+
         const formattedNews = featuredNews.map((article: any) => ({
           id: `news-${article.id}`,
-          title: article.title, // Already formatted by backend based on language
-          date: new Date(article.publishedDate).toLocaleDateString(language === 'bg' ? 'bg-BG' : 'en-US'),
-          excerpt: article.excerpt, // Already formatted by backend based on language
+          title: article.title,
+          date: new Date(article.published_date || article.publishedDate).toLocaleDateString(language === 'bg' ? 'bg-BG' : 'en-US'),
+          excerpt: article.excerpt,
           link: `/news/${article.id}`,
-          imageUrl: article.featuredImage || "https://picsum.photos/400/300?random=2"
+          imageUrl: article.featured_image_url || article.featuredImage || "https://picsum.photos/400/300?random=2"
         }));
 
         setNewsItems(formattedNews);
       } catch (error) {
-        console.error('Error loading featured news:', error);
-        // If API fails, set empty array to hide news section
-        setNewsItems([]);
+        console.error('[HomePage] Error loading news, using hardcoded fallback:', error);
+        // If API fails, use hardcoded fallback
+        try {
+          const hardcodedNews = getFeaturedArticles(language, 3);
+          const formattedNews = hardcodedNews.map((article: any) => ({
+            id: `news-${article.id}`,
+            title: article.title,
+            date: new Date(article.published_date).toLocaleDateString(language === 'bg' ? 'bg-BG' : 'en-US'),
+            excerpt: article.excerpt,
+            link: `/news/${article.id}`,
+            imageUrl: article.featured_image_url || "https://picsum.photos/400/300?random=2"
+          }));
+          setNewsItems(formattedNews);
+        } catch (fallbackError) {
+          console.error('[HomePage] Hardcoded fallback also failed:', fallbackError);
+          setNewsItems([]);
+        }
       } finally {
         setIsLoadingNews(false);
       }
     };
 
     loadNews();
-  }, [language, t]);
+  }, [language]);
 
   const defaultFeatures = [
     t.homePage.features.feature1.title,
