@@ -78,7 +78,8 @@
       "Bash(DEPLOY-INSTRUCTIONS.txt)",
       "Bash(dist/ )",
       "Bash(FRONTEND-DEPLOY-INSTRUCTIONS.txt)",
-      "Bash(README-DEPLOYMENT.md)"
+      "Bash(README-DEPLOYMENT.md)",
+      "Bash(xargs -r kill -9)"
     ],
     "deny": [],
     "ask": []
