@@ -15,7 +15,7 @@ class ApiService {
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${API_BASE_URL}/home/nukgszco/backend${endpoint}`;
+    const url = `${API_BASE_URL}/api${endpoint}`;
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...options.headers,
@@ -54,7 +54,7 @@ class ApiService {
 
   // Auth methods
   async login(username: string, password: string) {
-    const data = await this.request<{ token: string; user: any }>('/src/routes/auth', {
+    const data = await this.request<{ token: string; user: any }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
     });

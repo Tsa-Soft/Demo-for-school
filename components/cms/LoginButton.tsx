@@ -96,63 +96,72 @@ export const LoginButton: React.FC = () => {
         </button>
 
         {showLoginModal && (
-          <div className="login-modal-overlay fixed inset-0 bg-black bg-opacity-20 flex items-start justify-center" style={{zIndex: 10000, paddingTop: '80px'}}>
-            <div className="login-modal-content bg-white p-6 rounded-lg w-full max-w-md mx-4 border-0 shadow-none" style={{zIndex: 10001}}>
-              <h2 className="text-xl font-bold mb-4 text-gray-900">{t.cmsLogin}</h2>
-              <form onSubmit={handleLogin}>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1 text-gray-700">{t.username}</label>
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue text-gray-900 bg-white"
-                    required
-                    autoFocus
-                    placeholder={t.enterUsername}
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1 text-gray-700">{t.password}</label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue text-gray-900 bg-white"
-                    required
-                    placeholder={t.enterPassword}
-                  />
-                </div>
-                {loginError && (
-                  <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                    {loginError}
-                  </div>
-                )}
-                <div className="flex gap-3 mb-4">
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="flex-1 bg-brand-blue text-white py-2 px-4 rounded hover:bg-brand-blue-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isLoading ? 'Loading...' : t.loginButton}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowLoginModal(false);
-                      setLoginError('');
-                      setUsername('');
-                      setPassword('');
-                    }}
-                    className="flex-1 bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition-colors"
-                  >
-                    {t.cancel}
-                  </button>
-                </div>
-              </form>
-            </div>
+  <div className="login-modal-overlay fixed inset-0 bg-black bg-opacity-20 flex items-start justify-center" style={{zIndex: 10000, paddingTop: '80px'}}>
+    <div className="login-modal-content bg-white p-6 rounded-lg w-full max-w-md mx-4 border-0 shadow-none" style={{zIndex: 10001}}>
+      <h2 className="text-xl font-bold mb-4 text-gray-900">{t.cmsLogin}</h2>
+      <form onSubmit={handleLogin}>
+        <div className="mb-4">
+          
+          {/* ПРОМЯНА 1: Добавен е htmlFor, който сочи към id на полето */}
+          <label htmlFor="username-input" className="block text-sm font-medium mb-1 text-gray-700">{t.username}</label>
+          <input
+            type="text"
+            // ПРОМЯНА 2: Добавени са id и name
+            id="username-input"
+            name="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue text-gray-900 bg-white"
+            required
+            autoFocus
+            placeholder={t.enterUsername}
+          />
+        </div>
+        <div className="mb-4">
+          {/* ПРОМЯНА 1: Добавен е htmlFor, който сочи към id на полето */}
+          <label htmlFor="password-input" className="block text-sm font-medium mb-1 text-gray-700">{t.password}</label>
+          <input
+            type="password"
+            // ПРОМЯНА 2: Добавени са id и name
+            id="password-input"
+            name="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue text-gray-900 bg-white"
+            required
+            placeholder={t.enterPassword}
+          />
+        </div>
+        {loginError && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {loginError}
           </div>
         )}
+        <div className="flex gap-3 mb-4">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="flex-1 bg-brand-blue text-white py-2 px-4 rounded hover:bg-brand-blue-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? 'Loading...' : t.loginButton}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setShowLoginModal(false);
+              setLoginError('');
+              setUsername('');
+              setPassword('');
+            }}
+            className="flex-1 bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition-colors"
+          >
+            {t.cancel}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
       </>
     );
   }
