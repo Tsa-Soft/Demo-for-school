@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PORT = process.env.FRONTEND_PORT || 8080;
-const BACKEND_URL = 'http://localhost:3002';
+const BACKEND_URL = 'http://localhost:3001';
 
 console.log(`📁 Serving static files from: ${path.join(__dirname, 'dist')}`);
 

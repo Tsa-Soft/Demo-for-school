@@ -26,7 +26,7 @@ router.post('/login', async (req: Request<{}, {}, LoginRequest>, res: Response) 
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const isValidPassword = bcrypt.compareSync(password, user.password_hash);
+    const isValidPassword = await bcrypt.compareSync(password, user.password_hash);
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -87,7 +87,7 @@ router.post('/change-password', authenticateToken, async (req: Request, res: Res
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const isValidPassword = bcrypt.compareSync(currentPassword, user.password_hash);
+    const isValidPassword = await bcrypt.compareSync(currentPassword, user.password_hash);
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Current password is incorrect' });
     }

@@ -38,17 +38,22 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https:"],
       scriptSrc: ["'self'"],
       objectSrc: ["'self'"],
-      frameAncestors: ["'self'", "http://localhost:5173", "http://localhost:3000"],
+      frameAncestors: ["'self'", "http://localhost:5173", "http://localhost:3000", "https://nukgsz.com", "https://www.nukgsz.com"],
       frameSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'", "https:"],
     },
   },
 }));
+// Configure CORS origins
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+  : process.env.NODE_ENV === 'production'
+    ? ['https://nukgsz.com', 'https://www.nukgsz.com']
+    : ['http://localhost:5173', 'http://localhost:3000', 'https://nukgsz.com', 'https://www.nukgsz.com'];
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourschool.com'] 
-    : ['http://localhost:5173', 'http://localhost:3000'],
+  origin: allowedOrigins,
   credentials: true
 }));
 app.use(morgan('combined'));

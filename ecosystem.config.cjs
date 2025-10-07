@@ -1,10 +1,10 @@
+// ecosystem.config.cjs
+
 module.exports = {
   apps: [
     {
       name: 'school-cms-backend',
-      script: './src/index.ts',
-      interpreter: 'node',
-      interpreter_args: '--loader ts-node/esm',
+      script: './dist/index.js', // Run the compiled file
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,

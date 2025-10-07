@@ -64,7 +64,21 @@
       "Bash(timeout 30 npm run dev)",
       "Bash(shuf:*)",
       "Read(///**)",
-      "Bash(/dev/null)"
+      "Bash(/dev/null)",
+      "Read(//home/shrek/Downloads/**)",
+      "Bash(tar:*)",
+      "Bash(backend/server.js )",
+      "Bash(backend/package-production.json )",
+      "Bash(backend/.env.production )",
+      "Bash(backend/setup-users-table.sql )",
+      "Bash(backend/README-SERVER.md )",
+      "Bash(CPANEL-DEPLOYMENT-GUIDE.md )",
+      "Bash(CPANEL-FIX.md )",
+      "Bash(QUICK-DEPLOY.md)",
+      "Bash(DEPLOY-INSTRUCTIONS.txt)",
+      "Bash(dist/ )",
+      "Bash(FRONTEND-DEPLOY-INSTRUCTIONS.txt)",
+      "Bash(README-DEPLOYMENT.md)"
     ],
     "deny": [],
     "ask": []
