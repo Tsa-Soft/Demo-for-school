@@ -692,9 +692,9 @@ class ApiService {
   }
 
   async reorderPatronContent(content: any[]) {
-    return this.request('/patron/reorder', {
-      method: 'PUT',
-      body: JSON.stringify({ content }),
+    return this.request('/patron/bulk-update', {
+      method: 'POST',
+      body: JSON.stringify({ items: content }),
     });
   }
 
