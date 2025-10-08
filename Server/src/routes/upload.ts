@@ -3,7 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import { db } from '../database/init-mysql';
+import { db } from '../database/connection';
 import { OkPacket, RowDataPacket } from 'mysql2';
 import { authenticateToken } from '../middleware/auth';
 import { MediaFile, AuthRequest } from '../types';

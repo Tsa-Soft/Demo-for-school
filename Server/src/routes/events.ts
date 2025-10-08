@@ -1,6 +1,6 @@
 import express from 'express';
 import { Request, Response } from 'express';
-import { db } from '../database/init-mysql';
+import { db } from '../database/connection';
 import { OkPacket, RowDataPacket } from 'mysql2';
 import { authenticateToken } from '../middleware/auth';
 

@@ -25,6 +25,9 @@ import healthRouter from './routes/health';
 // Зареждане на променливите от .env файла в process.env
 dotenv.config();
 
+// Import database connection
+import { connectDatabase } from './database/connection';
+
 // ------------ Конфигурация от .env ------------
 const PORT = process.env.PORT || 3001;
 const BASE_PATH = (process.env.BASE_PATH || '/api').replace(/\/+$/, '');
@@ -118,10 +121,27 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 // ------------ Старт на сървъра ------------
-app.listen(PORT, () => {
-  console.log('🚀 ========================================');
-  console.log(`🚀 Server started successfully on port ${PORT}`);
-  console.log(`🚀 API available at: http://localhost:${PORT}${BASE_PATH}`);
-  console.log(`🚀 Allowed origins: ${ALLOWED_ORIGINS.join(', ')}`);
-  console.log('🚀 ========================================');
-});
+const startServer = async () => {
+  try {
+    console.log('🚀 ========================================');
+    console.log('🚀 Starting School CMS Backend Server...');
+    console.log('🚀 ========================================');
+
+    // Connect to database first
+    await connectDatabase();
+
+    app.listen(PORT, () => {
+      console.log('🚀 ========================================');
+      console.log(`🚀 Server started successfully on port ${PORT}`);
+      console.log(`🚀 API available at: http://localhost:${PORT}${BASE_PATH}`);
+      console.log(`🚀 Allowed origins: ${ALLOWED_ORIGINS.join(', ')}`);
+      console.log('🚀 ========================================');
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    console.error('❌ Error details:', error);
+    process.exit(1);
+  }
+};
+
+startServer();

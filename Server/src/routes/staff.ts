@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { db } from '../database/init-mysql';
+import { db } from '../database/connection';
 import { authenticateToken } from '../middleware/auth';
 import { StaffMember, AuthRequest } from '../types';
 

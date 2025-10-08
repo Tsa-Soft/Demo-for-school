@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import { db } from '../database/init-mysql';
+import { db } from '../database/connection';
 import { OkPacket, RowDataPacket } from 'mysql2';
 import { generateToken, authenticateToken } from '../middleware/auth';
 import { LoginRequest, User, AuthRequest } from '../types';

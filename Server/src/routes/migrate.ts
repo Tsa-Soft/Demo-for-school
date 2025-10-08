@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { db } from '../database/init-mysql';
+import { db } from '../database/connection';
 import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
